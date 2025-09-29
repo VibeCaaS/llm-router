@@ -1,0 +1,257 @@
+# VibeCaaS Intelligent Routing Configuration
+# Routes vibe coding requests to appropriate models and agents
+
+policies:
+  - name: "vibe_coding_router"
+    url: http://router-server:8000/v2/models/vibe_coding_ensemble/infer
+    request_classifier:
+      enabled: true
+      model: meta/llama-3.1-8b-instruct
+    llms:
+      # Core Development Tasks
+      - name: FullStackDevelopment
+        api_base: https://integrate.api.nvidia.com
+        api_key: ${NVIDIA_API_KEY}
+        model: nvidia/llama-3.3-nemotron-super-49b-v1
+        capabilities:
+          - "full_app_generation"
+          - "frontend_backend_integration"
+          - "database_design"
+        priority: 1
+        
+      - name: APIDesign
+        api_base: https://integrate.api.nvidia.com
+        api_key: ${NVIDIA_API_KEY}
+        model: meta/llama-3.1-70b-instruct
+        capabilities:
+          - "rest_api_design"
+          - "graphql_schema"
+          - "openapi_spec"
+        priority: 2
+        
+      - name: FrontendDevelopment
+        api_base: https://integrate.api.nvidia.com
+        api_key: ${NVIDIA_API_KEY}
+        model: mistralai/mixtral-8x22b-instruct-v0.1
+        capabilities:
+          - "react_nextjs"
+          - "vue_angular"
+          - "ui_ux_design"
+          - "responsive_design"
+        priority: 2
+        
+      - name: BackendDevelopment
+        api_base: https://integrate.api.nvidia.com
+        api_key: ${NVIDIA_API_KEY}
+        model: nvidia/llama-3.3-nemotron-super-49b-v1
+        capabilities:
+          - "fastapi_django"
+          - "nodejs_express"
+          - "microservices"
+          - "database_operations"
+        priority: 1
+        
+      # Infrastructure & DevOps
+      - name: KubernetesOrchestration
+        api_base: https://integrate.api.nvidia.com
+        api_key: ${NVIDIA_API_KEY}
+        model: meta/llama-3.1-70b-instruct
+        capabilities:
+          - "k8s_manifests"
+          - "helm_charts"
+          - "container_orchestration"
+          - "gpu_scheduling"
+        priority: 1
+        
+      - name: DockerContainerization
+        api_base: https://integrate.api.nvidia.com
+        api_key: ${NVIDIA_API_KEY}
+        model: meta/llama-3.1-8b-instruct
+        capabilities:
+          - "dockerfile_creation"
+          - "compose_files"
+          - "multi_stage_builds"
+        priority: 3
+        
+      # AI/ML Specific
+      - name: MLOpsDeployment
+        api_base: https://integrate.api.nvidia.com
+        api_key: ${NVIDIA_API_KEY}
+        model: nvidia/llama-3.3-nemotron-super-49b-v1
+        capabilities:
+          - "model_serving"
+          - "triton_inference"
+          - "gpu_optimization"
+          - "batch_processing"
+        priority: 1
+        
+      - name: DataEngineering
+        api_base: https://integrate.api.nvidia.com
+        api_key: ${NVIDIA_API_KEY}
+        model: meta/llama-3.1-70b-instruct
+        capabilities:
+          - "etl_pipelines"
+          - "data_processing"
+          - "streaming_data"
+        priority: 2
+        
+      # Code Quality & Testing
+      - name: CodeReview
+        api_base: https://integrate.api.nvidia.com
+        api_key: ${NVIDIA_API_KEY}
+        model: mistralai/mixtral-8x22b-instruct-v0.1
+        capabilities:
+          - "security_review"
+          - "performance_optimization"
+          - "best_practices"
+        priority: 2
+        
+      - name: TestGeneration
+        api_base: https://integrate.api.nvidia.com
+        api_key: ${NVIDIA_API_KEY}
+        model: meta/llama-3.1-8b-instruct
+        capabilities:
+          - "unit_tests"
+          - "integration_tests"
+          - "e2e_tests"
+        priority: 3
+        
+      # Simple Tasks
+      - name: QuickFixes
+        api_base: https://integrate.api.nvidia.com
+        api_key: ${NVIDIA_API_KEY}
+        model: meta/llama-3.1-8b-instruct
+        capabilities:
+          - "bug_fixes"
+          - "simple_refactoring"
+          - "config_updates"
+        priority: 3
+
+# Agent Orchestration Configuration
+agents:
+  - name: "project_architect"
+    type: "planning"
+    model: "meta/llama-3.1-70b-instruct"
+    responsibilities:
+      - "system_design"
+      - "architecture_decisions"
+      - "technology_selection"
+    
+  - name: "code_generator"
+    type: "implementation"
+    model: "nvidia/llama-3.3-nemotron-super-49b-v1"
+    responsibilities:
+      - "code_generation"
+      - "feature_implementation"
+      - "api_development"
+    
+  - name: "devops_engineer"
+    type: "deployment"
+    model: "meta/llama-3.1-70b-instruct"
+    responsibilities:
+      - "ci_cd_pipelines"
+      - "container_orchestration"
+      - "infrastructure_as_code"
+    
+  - name: "qa_specialist"
+    type: "quality"
+    model: "mistralai/mixtral-8x22b-instruct-v0.1"
+    responsibilities:
+      - "test_creation"
+      - "code_review"
+      - "security_scanning"
+
+# Request Classification Rules
+classification_rules:
+  - pattern: "create.*app|build.*application|develop.*platform"
+    category: "full_stack"
+    models: ["FullStackDevelopment"]
+    agents: ["project_architect", "code_generator"]
+    
+  - pattern: "api.*endpoint|rest.*service|graphql"
+    category: "api_development"
+    models: ["APIDesign", "BackendDevelopment"]
+    agents: ["code_generator"]
+    
+  - pattern: "ui|frontend|react|vue|angular|component"
+    category: "frontend"
+    models: ["FrontendDevelopment"]
+    agents: ["code_generator"]
+    
+  - pattern: "deploy|kubernetes|k8s|container|docker"
+    category: "infrastructure"
+    models: ["KubernetesOrchestration", "DockerContainerization"]
+    agents: ["devops_engineer"]
+    
+  - pattern: "gpu|cuda|ml.*model|inference|training"
+    category: "ml_ops"
+    models: ["MLOpsDeployment"]
+    agents: ["devops_engineer", "code_generator"]
+    
+  - pattern: "test|spec|coverage|quality"
+    category: "testing"
+    models: ["TestGeneration", "CodeReview"]
+    agents: ["qa_specialist"]
+    
+  - pattern: "fix|bug|issue|error|problem"
+    category: "debugging"
+    models: ["QuickFixes", "CodeReview"]
+    agents: ["code_generator", "qa_specialist"]
+
+# Routing Strategy Configuration
+routing_strategy:
+  mode: "intelligent"  # Options: simple, intelligent, hybrid
+  fallback_model: "mistralai/mixtral-8x22b-instruct-v0.1"
+  max_retries: 3
+  timeout_seconds: 30
+  
+  complexity_thresholds:
+    simple: 0.3
+    moderate: 0.6
+    complex: 0.9
+    
+  load_balancing:
+    enabled: true
+    algorithm: "weighted_round_robin"
+    health_check_interval: 60
+    
+  caching:
+    enabled: true
+    ttl_seconds: 300
+    max_cache_size: 1000
+
+# GPU Resource Allocation
+gpu_allocation:
+  enabled: true
+  priority_tiers:
+    high:
+      - "MLOpsDeployment"
+      - "FullStackDevelopment"
+    medium:
+      - "BackendDevelopment"
+      - "DataEngineering"
+    low:
+      - "QuickFixes"
+      - "DockerContainerization"
+  
+  time_slicing:
+    enabled: true
+    replicas_per_gpu: 4
+    
+# Monitoring & Metrics
+monitoring:
+  prometheus:
+    enabled: true
+    port: 9090
+    metrics:
+      - "request_latency"
+      - "model_utilization"
+      - "routing_decisions"
+      - "cache_hit_rate"
+      
+  logging:
+    level: "INFO"
+    format: "json"
+    destinations:
+      - "stdout"
+      - "file:/var/log/vibe_router.log"
