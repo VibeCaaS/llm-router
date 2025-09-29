@@ -110,8 +110,72 @@ services:
               device_ids: [ "0" ]
               capabilities: [ gpu ]
 
+  # VibeCaaS Services
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=vibecaas_user
+      - POSTGRES_PASSWORD=vibecaas_dev_password
+      - POSTGRES_DB=vibecaas
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - llm-router-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vibecaas_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - llm-router-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  vibe-router:
+    build:
+      context: ./backend/services/vibe_router
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8001"  # Router service
+      - "8004:8002"  # Integration service
+    environment:
+      - NVIDIA_API_KEY=${NVIDIA_API_KEY}
+      - DATABASE_URL=postgresql://vibecaas_user:vibecaas_dev_password@postgres:5432/vibecaas
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - LOG_LEVEL=INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend/services/vibe_router/config.yaml:/app/config.yaml:ro
+    networks:
+      - llm-router-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+
 volumes:
   grafana_data:
+  postgres_data:
+  redis_data:
 
 
 networks:
